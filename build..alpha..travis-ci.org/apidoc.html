@@ -1,0 +1,152 @@
+<div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a
+
+        href="https://github.com/florianheinemann/express-sslify"
+
+    >express-sslify (v1.2.0)</a>
+</h1>
+<h4>Enforces SSL for node.js express projects</h4>
+<div class="apidocSectionDiv"><a
+    href="#apidoc.tableOfContents"
+    id="apidoc.tableOfContents"
+><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.express-sslify">module express-sslify</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.express-sslify.HTTPS">
+            function <span class="apidocSignatureSpan">express-sslify.</span>HTTPS
+            <span class="apidocSignatureSpan">(options)</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.express-sslify" id="apidoc.module.express-sslify">module express-sslify</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.express-sslify.HTTPS" id="apidoc.element.express-sslify.HTTPS">
+        function <span class="apidocSignatureSpan">express-sslify.</span>HTTPS
+        <span class="apidocSignatureSpan">(options)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">HTTPS = function (options) {
+	return function(req, res, next) {
+		// Crash on pre-1.0.0-style arguments
+		if(typeof options === &#x27;boolean&#x27;) {
+			return next(&#x22;express-sslify has changed the way how arguments are treated. Please check the readme.&#x22;);
+		}
+
+		options = applyOptions(options);
+
+		// First, check if directly requested via https
+		var isHttps = req.secure;
+
+		// Second, if the request headers can be trusted (e.g. because they are send
+		// by a proxy), check if x-forward-proto is set to https
+		if(!isHttps &#x26;&#x26; options.trustProtoHeader) {
+			isHttps = ((req.headers[&#x22;x-forwarded-proto&#x22;] || &#x27;&#x27;).substring(0,5) === &#x27;https&#x27;);
+		}
+
+		// Third, if trustAzureHeader is set, check for Azure&#x27;s headers
+		// indicating a SSL connection
+		if(!isHttps &#x26;&#x26; options.trustAzureHeader &#x26;&#x26; req.headers[&#x22;x-arr-ssl&#x22;]) {
+			isHttps = true;
+		}
+
+		if(isHttps) {
+			next();
+		} else {
+			// Only redirect GET methods
+			if(req.method === &#x22;GET&#x22; || req.method === &#x27;HEAD&#x27;) {
+				var host = options.trustXForwardedHostHeader ? (req.headers[&#x27;x-forwarded-host&#x27;] || req.headers.host) : req.headers.host;
+				res.redirect(301, &#x22;https://&#x22; + host + req.originalUrl);
+			} else {
+				res.status(403).send(&#x22;Please use HTTPS when submitting data to this server.&#x22;);
+			}
+		}
+	};
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+```javascript
+var express = require(&#x27;express&#x27;);
+var http = require(&#x27;http&#x27;);
+var enforce = require(&#x27;express-sslify&#x27;);
+
+var app = express();
+
+// Use enforce.<span class="apidocCodeKeywordSpan">HTTPS</span>({ trustProtoHeader: true }) in case you are behind
+// a load balancer (e.g. Heroku). See further comments below
+app.use(enforce.HTTPS());
+
+http.createServer(app).listen(app.get(&#x27;port&#x27;), function() {
+	console.log(&#x27;Express server listening on port &#x27; + app.get(&#x27;port&#x27;));
+});
+```
+...</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
